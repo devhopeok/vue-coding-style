@@ -1,0 +1,258 @@
+<template>
+    <div>
+        <home-header></home-header>
+        
+        <div class="main-content">
+            <div class="container">
+                <div class="col-md-6 col-md-offset-3">
+                    <div class="panel clearfix">
+                        <h3 class="text-center">Please login before proceeding to your assignment page</h3>
+                        <p class="col-md-10 col-md-offset-1 alert alert-info text-center">
+                            If you don't have an account in CollegeDesk please 
+                            <a href="#" data-toggle="modal" data-target="#studentRegistrationPopup">
+                                create
+                            </a> 
+                            an account.
+                        </p>
+                        <form action="" class="col-md-8 col-md-offset-2">
+                            <div class="form-group">
+                                <label for="">Email ID</label>
+                                <input class="form-control" type="email" v-model="userName">
+                            </div>
+                            <div class="form-group">
+                                <label for="">Password</label>
+                                <input class="form-control" type="password" v-model="password">
+                            </div>
+                            <button class="btn btn-lg btn-wide btn-default" style="margin-right: 10px;" @click.prevent="onLogin">Login</button>
+                            <a href="#" data-toggle="modal" data-target="#forgotPassModal">Forgot password?</a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- forgot pass popup -->
+        <div class="modal fade" id="forgotPassModal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Reset Password</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>Please enter the Email ID that you have used during Sign Up</p>
+                        <div class="form-group">
+                            <label for="">Email ID</label>
+                            <input class="form-control" type="text" v-model="resetEmail">
+                        </div>
+                        <button class="btn btn-primary" @click.prevent="onResetPassword">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /forgot pass popup -->
+    
+        <!-- student registration popup -->
+        <div class="modal fade" id="studentRegistrationPopup" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Register</h4>
+                    </div>
+                    <div class="modal-body">
+                        <!-- <p class="alert alert-info">All fields are required</p> -->
+                        <form action="">
+                            <div class="row">
+                                <div class="form-group col-md-6">
+                                    <label for="">First Name</label>
+                                    <input class="form-control" type="text" v-model="regFirstName" required>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="">Last Name</label>
+                                    <input class="form-control" type="text" v-model="regLastName" required>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group col-md-6">
+                                    <label for="">Email ID</label>
+                                    <input class="form-control" type="email" v-model="regEmail" required>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="">Re-type Email ID</label>
+                                    <input class="form-control" type="email" v-model="regConfirmEmail" required>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group col-md-6">
+                                    <label for="">Password</label>
+                                    <input class="form-control" type="password" v-model="regPassword" required>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="">Re-type Password</label>
+                                    <input class="form-control" type="password" v-model="regConfirmPassword" required>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group col-md-6">
+                                    <label for="">School / College / Institution</label>
+                                    <input class="form-control" type="text" v-model="regCollegeID" required>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label for="">Student ID</label>
+                                    <input class="form-control" type="text" v-model="regStudentID" required>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div id="captcha_container"></div>
+                                    <p class="vv-invalid" v-if="recaptchaError != ''">
+                                        {{ recaptchaError }}
+                                    </p>
+                                </div>
+                            </div>
+                            <button class="mt-10 btn btn-lg btn-wide btn-default" @click.prevent="onRegister">Register</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+    import HomeHeader from '../../components/Header/HomeHeader.vue'
+    import router from '../../router'
+    export default {
+        components: {
+            homeHeader: HomeHeader
+        },
+        data: function() {
+            return {
+                userName: '',
+                password: '',
+                regFirstName: '',
+                regLastName: '',
+                regEmail: '',
+                regConfirmEmail: '',
+                regPassword: '',
+                regConfirmPassword: '',
+                regRole: 'student',
+                regCollegeID: '',
+                regStudentID: '',
+                isRobot: true,
+                recaptchaError: '',
+                resetEmail: ''
+            }
+        },
+        mounted: function() {
+            let addCaptcha = () => {
+                if (window.grecaptcha === undefined) {
+                    setTimeout(addCaptcha, 500)
+                    return
+                }
+                window.grecaptcha.render('captcha_container', {
+                    sitekey: this.sitekey,
+                    callback: (response) => {
+                        this.isRobot = false
+                        this.recaptchaError = ''
+                    }
+                })
+            }
+            addCaptcha()
+        },
+        methods: {
+            onLogin: function() {
+                let headers = {
+                    'Content-Type': 'application/json'
+                }
+                let data = {
+                    userName: this.userName,
+                    password: this.password
+                }
+                let config = {
+                    method: 'post',
+                    baseURL: this.baseURL,
+                    url: '/auth/login',
+                    headers: headers,
+                    data: JSON.stringify(data)
+                }
+                this.axios(config).then((response) => {
+                    let res = response.data
+                    let role = res.user.roles[0];
+                    var expires = res.expiresIn / 1000 / 60 / 60 / 24;
+                    this.$store.dispatch('setUser', response.data)
+                    if(role == 'instructor') {
+                        router.replace({path: '/teacher'})
+                    } else if(role == 'ta') {
+                        router.replace({path: '/analyst-assignment-list'})
+                    } else if(role == 'student') {
+                        router.replace({path: '/student/assignment'})
+                    }
+                }).catch(e => {
+                    let status = e.response.status
+                    if(status == 401)
+                        alert('Incorrect username or password')
+                })
+            },
+            onRegister: function() {
+                if(this.isRobot) {
+                    this.recaptchaError = 'Please confirm that you are not robot.'
+                    return
+                }
+                let url = `${this.baseURL}/auth/register`
+                let data = {
+                    firstName: this.regFirstName,
+                    lastName: this.regLastName,
+                    email: this.regEmail,
+                    password: this.regPassword,
+                    roles: [this.regRole],
+                    collegeId: this.regCollegeID || 0,
+                    studentId: this.regStudentID || null
+                }
+                let headers = {
+                    'Content-Type': 'application/json'
+                }
+                let config = {
+                    method: 'post',
+                    baseURL: this.baseURL,
+                    url: '/auth/register',
+                    data: JSON.stringify(data),
+                    headers: headers
+                }
+                this.axios(config).then((response) => {
+                    alert('Signup is successful and a verification link is emailed to your registered email id. Please authenticate by clinking on the link.')
+                }).catch(e => {
+                    let status = e.response.status
+                    if(status == 422)
+                        alert('Already exisits!')
+                })
+            },
+            onResetPassword: function() {
+                let url = `${this.baseURL}/auth/reset_password_link`
+                let data = {
+                    email: this.resetEmail
+                }
+                let headers = {
+                    'Content-Type': 'application/json'
+                }
+                let config = {
+                    method: 'post',
+                    baseURL: this.baseURL,
+                    url: '/auth/reset_password_link',
+                    data: JSON.stringify(data),
+                    headers: headers
+                }
+                this.axios(config).then((response) => {
+                    alert('Reset password link is emailed to your registered email id. Please reset password by clinking on the link.')
+                    $('#forgotPassModal').modal('hide')
+                }).catch(e => {
+                    let status = e.response.status
+                    if(status == 404)
+                        alert('Unregistered email id.')
+                    $('#forgotPassModal').modal('hide')
+                })
+            }
+        }
+    }
+</script>
